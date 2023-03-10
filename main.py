@@ -5,46 +5,47 @@ from bs4 import Tag
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
 
-def is_ul(tag: Tag) -> bool:
-    return tag.name == "ul" or ("aria-role" in tag.attrs.keys() and tag["aria-role"] == "list")
-
-
-def is_li(tag: Tag) -> bool:
-    return tag.name == "li" or ("aria-role" in tag.attrs.keys() and tag["aria-role"] == "listitem")
-
 
 def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
+    global container_fluid
     with open("scratch.html", "r+", encoding="utf-8",) as scratch:
         soup = BeautifulSoup(scratch, "html.parser")
-        ul = soup.find(is_ul)
-        if ul is not None:
-            ul.name = "div"
-            ul["class"] = "container-fluid"
-            ul["aria-role"] = "list"
-            ul["aria-owns"] = []
-        li = soup.find(is_ul)
-        index = 1
-        while li is not None:
-            li.name = "div"
-            li["aria-role"] = "listitem"
-            li["class"] = "col"
-            li["id"] = "hdc-key-list-" + str(index)
-            index += 1
-            ul["owns"].append(li["id"])
-            imagediv = soup.new_tag("div")
-            imagediv["class"] = "col col-md-3"
-            image = soup.new_tag("img")
-            image["class"] = "img-fluid"
-            image["alt"] = "Image goes here"
-            image["src"] = "/img_placeholder.jpg"
-            imagediv.append(image)
-            rowdiv = soup.new_tag("div")
-            rowdiv["class"] = "row"
-            rowdiv.append(imagediv)
-            li.insert_before(rowdiv)
-            rowdiv.append(li)
-            li = li.find_next(is_li)
+        container_fluid = soup.new_tag("div", class_="container-fluid", role="list")
+        container_fluid["aria-owns"] = []
+        soup.find(class_="row").insert_before(container_fluid)
+        keyListItems = []
+        for i in range(1,8):
+            nextListItem = soup.find(id="hdc-key-list-" + str(i))
+            if nextListItem is not None:
+                container_fluid["aria-owns"].append("hdc-key-list-" + str(i))
+                if "aria-role" in nextListItem.attrs.keys():
+                    del nextListItem["aria-role"]
+                nextListItem["role"] = "listitem"
+                row = soup.new_tag("div")
+                row["class"] = "row"
+                container_fluid.append(row)
+                image_div = soup.new_tag("div")
+                image_div["class"] = "col col-md-3"
+                row.append(image_div)
+                image = soup.new_tag("img", src="/placeholder_image.jpg", alt="Image goes here")
+                image["class"] = "img-fluid"
+                image_div.append(image)
+                row.append(nextListItem)
+                keyListItems.append(nextListItem)
+        for nextListItem in keyListItems:
+            redundant_row = nextListItem.find(class_="row")
+            while redundant_row is not None:
+                redundant_row.decompose()
+                redundant_row = nextListItem.find(class_="row")
+        container_fluid_tag = container_fluid.find_next(class_="container_fluid")
+        while container_fluid_tag is not None:
+            container_fluid_tag.decompose()
+            container_fluid_tag = container_fluid.find_next(class_="container_fluid")
+        rows_to_delete = [row for row in soup.find_all(class_="row") if container_fluid not in list(row.parents)]
+        for row in rows_to_delete:
+            row.decompose()
+
 
         print(soup.prettify())
         scratch.seek(0)
