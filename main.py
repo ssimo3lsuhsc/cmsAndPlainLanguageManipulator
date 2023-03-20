@@ -10,12 +10,7 @@ def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
     with open("scratch.html", "r+", encoding="utf-8",) as scratch:
         soup = BeautifulSoup(scratch, "html.parser")
-        for tag in [tag for tag in soup(role="term") if "aria-labelledby" in tag.attrs.keys()]:
-            tag["id"] = tag["aria-labelledby"]
-            del tag["aria-labelledby"]
-        for tag in [tag for tag in soup(role="definition") if "id" in tag.attrs.keys()]:
-            tag["aria-labelledby"] = tag["id"]
-            del tag["id"]
+        #Do stuff here
 
 
         print(soup.prettify())
