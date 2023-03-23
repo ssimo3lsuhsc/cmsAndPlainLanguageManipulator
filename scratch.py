@@ -6,4 +6,4 @@ with open("scratch.html") as scratch:
 
     with open("output.html", "w") as output:
         output.truncate(0)
-        output.write(soup.prettify())
+        output.write(str(soup))
