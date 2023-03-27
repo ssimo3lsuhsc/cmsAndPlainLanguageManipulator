@@ -12,7 +12,7 @@ import re
 
 def copyHtml():
     html_matcher = re.compile(r"<MAINCONTENT>(?P<html>.*?)</MAINCONTENT>", re.I | re.DOTALL)
-    filename_matcher = re.compile(r"plain_lang(?P<iam>.*).aspx$")
+    filename_matcher = re.compile(r"plain_lang_(?P<iam>.*).aspx$")
 
 
     for file in os.listdir(r"W:\Development\dev.www.hdc.lsuhsc.edu\root"):
@@ -24,7 +24,7 @@ def copyHtml():
 
             html_match = html_matcher.search(xml)
             if html_match is not None:
-                with open(os.path.join("html_source", match.group("iam") + ".html"), "w") as outputPath:
+                with open(os.path.join("html_source", match.group("iam") + ".html"), "w", encoding="utf-8") as outputPath:
                     outputPath.truncate(0)
                     outputPath.write(html_match.group("html").strip())
 
@@ -71,4 +71,4 @@ def manipulate(filename: str):
 
 
 if __name__ == "__main__":
-    copyImages()
+    copyHtml()
