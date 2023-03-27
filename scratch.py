@@ -8,7 +8,9 @@ from skimage.transform import resize, rescale
 import numpy as np
 import numpy.typing as npt
 import re
+import shutil
 
+space_subber = re.compile(r"\s")
 
 def copyHtml():
     html_matcher = re.compile(r"<MAINCONTENT>(?P<html>.*?)</MAINCONTENT>", re.I | re.DOTALL)
@@ -57,6 +59,11 @@ def copyImages():
                     paths.insert(0, r"W:\Development\dev.www.hdc.lsuhsc.edu\root")
                     copyImage(paths, resized)
                     pass
+def add_about_us_icon(src: Union[str, os.PathLike], dst: Union[str, os.PathLike]):
+    image = iio.imread(src)
+    resized = (resize(image, (160, 160)) * 255).astype(np.uint8)
+    iio.imwrite(dst, resized)
+    pass
 
 def manipulate(filename: str):
     with open(os.path.join("html_source", filename)) as scratch:
@@ -70,5 +77,12 @@ def manipulate(filename: str):
 
 
 
+
+
 if __name__ == "__main__":
-    copyHtml()
+    dst = r"images\plain_lang\icons\About_Us_page"
+    shutil.copytree(r"C:\Users\ssimo3\OneDrive - LSUHSC\Outreach OneDrive\01 HDC\Web\Icons\About Us page", dst, copy_function=add_about_us_icon)
+    renamable_directories = [(root, dirs + files) for root, dirs, files in os.walk(dst, topdown=False)]
+    for root, nodes in renamable_directories:
+        for node in nodes:
+            os.rename(os.path.join(root, node), os.path.abspath(os.path.join(root, space_subber.sub("_", node))))
