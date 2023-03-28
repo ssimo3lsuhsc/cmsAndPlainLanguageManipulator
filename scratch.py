@@ -126,7 +126,7 @@ def write_image_alt_to_json_init():
         for image in images:
             alt_dict[os.path.normpath('/' + os.path.join(root, image)).replace("\\", "/")] = ""
     for file in os.listdir("html_output"):
-        soup = BeautifulSoup(open(os.path.join("html_output", file), "html.parser"))
+        soup = BeautifulSoup(open(os.path.join("html_output", file)), "html.parser")
         for image in soup("img"):
             if image["alt"] != "":
                 alt_dict[image["src"]] = image["alt"]
