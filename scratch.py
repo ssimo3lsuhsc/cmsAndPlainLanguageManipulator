@@ -9,6 +9,7 @@ import numpy as np
 import numpy.typing as npt
 import re
 import shutil
+import json
 
 space_subber = re.compile(r"\s")
 
@@ -119,8 +120,20 @@ def list_to_grid(classes_on_containers: list[str] = None, classes_on_rows: list[
             output_stream.write(str(source_soup))
 
 
-
+def write_image_alt_to_json_init():
+    alt_dict: dict[str, str] = {}
+    for root, dirs, images in os.walk("images"):
+        for image in images:
+            alt_dict[os.path.normpath('/' + os.path.join(root, image)).replace("\\", "/")] = ""
+    for file in os.listdir("html_output"):
+        soup = BeautifulSoup(open(os.path.join("html_output", file), "html.parser"))
+        for image in soup("img"):
+            if image["alt"] != "":
+                alt_dict[image["src"]] = image["alt"]
+    with open("image_alts.json", "w", encoding="utf-8") as alts_json:
+        alts_json.truncate(0)
+        alts_json.write(json.dumps(alt_dict, indent=5))
 
 
 if __name__ == "__main__":
-    list_to_grid(["mt-3", "mb-3"], ["mt-3", "mb-3"])
+    write_image_alt_to_json_init()
