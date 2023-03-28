@@ -136,4 +136,11 @@ def write_image_alt_to_json_init():
 
 
 if __name__ == "__main__":
-    write_image_alt_to_json_init()
+    for file in os.listdir("html_source"):
+         soup = BeautifulSoup(open(os.path.join("html_source", file), encoding="utf-8"), "html.parser")
+         imgs = [img for img in soup("img") if isinstance(img, Tag) and not img["src"].startswith("/images/plain_lang/") and not img["src"].startswith("http") and img["src"] != "/images/logo.jpg"]
+         if len(imgs) > 0:
+             print(file)
+             for img in imgs:
+                 print(str(img))
+             print("")
