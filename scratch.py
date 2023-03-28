@@ -134,13 +134,16 @@ def write_image_alt_to_json_init():
         alts_json.truncate(0)
         alts_json.write(json.dumps(alt_dict, indent=5))
 
+def update_image_alt_from_json():
+    alt_dict: dict[str, str] = json.load(open("image_alts.json", encoding="utf-8"))
+    for file in os.listdir("html_source"):
+        soup = BeautifulSoup(open(os.path.join("html_source", file), encoding="utf-8"), parser="html.parser")
+        for img in soup("img"):
+            img["alt"] = alt_dict[img["src"]]
+        with open(os.path.join("html_output", file), "w", encoding="utf-8") as output:
+            output.truncate(0)
+            output.write(str(soup))
+
 
 if __name__ == "__main__":
-    for file in os.listdir("html_source"):
-         soup = BeautifulSoup(open(os.path.join("html_source", file), encoding="utf-8"), "html.parser")
-         imgs = [img for img in soup("img") if isinstance(img, Tag) and not img["src"].startswith("/images/plain_lang/") and not img["src"].startswith("http") and img["src"] != "/images/logo.jpg"]
-         if len(imgs) > 0:
-             print(file)
-             for img in imgs:
-                 print(str(img))
-             print("")
+    update_image_alt_from_json()
