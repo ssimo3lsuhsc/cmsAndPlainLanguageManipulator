@@ -1,6 +1,6 @@
 from typing import Union, Any
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 import os.path
 import os
 import imageio.v3 as iio
@@ -74,15 +74,53 @@ def manipulate(filename: str):
             output.truncate(0)
             output.write(str(soup))
 
+def list_to_grid(classes_on_containers: list[str] = None, classes_on_rows: list[str] = None):
+    if classes_on_containers is None:
+        classes_on_containers = []
+    if classes_on_rows is None:
+        classes_on_rows = []
+    for file in os.listdir("html_source"):
+        source_soup = BeautifulSoup(open(os.path.join("html_source", file), encoding="utf-8"), "html.parser")
+        unstyled_lists = [_list for _list in source_soup("ul", class_="list-unstyled") if isinstance(_list, Tag)]
+        for _list in unstyled_lists:
+            _list.name = "div"
+            _list["class"].remove("list-unstyled")
+            items = [item for item in _list("li", recursive=False) if isinstance(item, Tag)]
+            for item in items:
+                item.name = "div"
+        for container in [container for container in source_soup(class_="container-fluid") if isinstance(container, Tag)]:
+            container["role"] = "grid"
+            for container_class in classes_on_containers:
+                if container_class not in container["class"]:
+                    container["class"].append(container_class)
+        for row in [row for row in source_soup(class_="row") if isinstance(row, Tag)]:
+            row["role"] = "row"
+            for row_class in classes_on_rows:
+                if row_class not in row["class"]:
+                    row["class"].append(row_class)
+            for col in [col for col in row(True, recursive=False) if isinstance(col, Tag)]:
+                col["role"] = "gridcell"
+                term = col.find(role="term")
+                if term is not None and isinstance(term, Tag):
+                    term.name = "h3"
+                    del term["role"]
+                    definitions = [p for p in term.find_next_siblings(role="definition") if isinstance(p, Tag)]
+                    for definition in definitions:
+                        del definition["role"]
+                        if "aria-labelledby" in definition.attrs.keys():
+                            del definition["aria-labelledby"]
+                elif col.find("img", class_="container-fluid") is None and col.find("h3") is None:
+                    if "class" not in col.attrs.keys():
+                        col["class"] = ["align-self-center"]
+                    elif "align-self-center" not in col["class"]:
+                        col["class"].append("align-self-center")
+        with open(os.path.join("html_output", file), "w", encoding="utf-8") as output_stream:
+            output_stream.truncate(0)
+            output_stream.write(str(source_soup))
 
 
 
 
 
 if __name__ == "__main__":
-    dst = r"images\plain_lang\icons\About_Us_page"
-    shutil.copytree(r"C:\Users\ssimo3\OneDrive - LSUHSC\Outreach OneDrive\01 HDC\Web\Icons\About Us page", dst, copy_function=add_about_us_icon)
-    renamable_directories = [(root, dirs + files) for root, dirs, files in os.walk(dst, topdown=False)]
-    for root, nodes in renamable_directories:
-        for node in nodes:
-            os.rename(os.path.join(root, node), os.path.abspath(os.path.join(root, space_subber.sub("_", node))))
+    list_to_grid(["mt-3", "mb-3"], ["mt-3", "mb-3"])
